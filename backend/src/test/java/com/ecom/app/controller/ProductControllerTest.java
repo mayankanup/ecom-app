@@ -3,6 +3,10 @@ package com.ecom.app.controller;
 import com.ecom.app.config.SecurityConfig;
 import com.ecom.app.dto.ProductResponse;
 import com.ecom.app.exception.ResourceNotFoundException;
+import com.ecom.app.repository.UserRepository;
+import com.ecom.app.security.CustomUserDetailsService;
+import com.ecom.app.security.JwtAuthFilter;
+import com.ecom.app.security.JwtUtil;
 import com.ecom.app.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ProductController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, JwtAuthFilter.class, JwtUtil.class, CustomUserDetailsService.class})
 class ProductControllerTest {
 
     @Autowired
@@ -28,6 +32,9 @@ class ProductControllerTest {
 
     @MockitoBean
     private ProductService productService;
+
+    @MockitoBean
+    private UserRepository userRepository;
 
     @Test
     void getAllProducts_isPubliclyAccessible() throws Exception {
