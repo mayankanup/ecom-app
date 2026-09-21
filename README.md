@@ -1,34 +1,55 @@
 # ecom-app
 
-A Java/Spring Boot e-commerce backend with a REST API: browse products without logging in, then register/log in to place an order. (Frontend is not built yet — this covers the backend only.)
+A Java/Spring Boot + React e-commerce app: browse products without logging in, add them to a cart, then register/log in to check out.
 
 ## Project layout
 
 ```
-backend/   Spring Boot 4 REST API (Java 17, Maven, H2 in-memory DB, JWT auth)
+backend/    Spring Boot 4 REST API (Java 17, Maven, H2 in-memory DB, JWT auth)
+frontend/   React 19 SPA (Vite, react-router-dom, Bootstrap 5)
+e2e-tests/  Selenium UI tests driving the running frontend + backend
 ```
 
 ## Prerequisites
 
-- Java 17+ (JDK)
-- No local Maven install needed — use the wrapper (`mvnw` / `mvnw.cmd`) committed in `backend/`
+- Java 17+ (JDK) — no local Maven install needed, each Java module has its own wrapper (`mvnw` / `mvnw.cmd`)
+- Node.js 18+ and npm, for the frontend
+- Chrome, if you want to run the Selenium tests in `e2e-tests/`
 
-## Starting the server
+## Starting the app
 
+You need both servers running, in two separate terminals.
+
+**Backend** (http://localhost:8080):
 ```bash
 cd backend
 ./mvnw spring-boot:run
 ```
 
-On Windows PowerShell, use `.\mvnw.cmd spring-boot:run` instead.
+**Frontend** (http://localhost:5173):
+```bash
+cd frontend
+npm install   # first time only
+npm run dev
+```
 
-The app starts on **http://localhost:8080**. On first startup it seeds:
+On Windows PowerShell, use `.\mvnw.cmd spring-boot:run` for the backend.
+
+Open [http://localhost:5173](http://localhost:5173) in a browser — that's the app. On first backend startup it seeds:
 - 8 sample products
 - One demo user: `demo@example.com` / `password123`
 
-The H2 database is in-memory, so all data resets every time you restart the app.
+The H2 database is in-memory, so all data resets every time the backend restarts.
 
-To stop the server, press `Ctrl+C` in the terminal running it (or, if it's running in the background and you don't have that terminal, find and kill whatever process is listening on port 8080).
+To stop either server, press `Ctrl+C` in its terminal (or, if it's running in the background and you don't have that terminal, find and kill whatever process is listening on port 8080 or 5173).
+
+## Trying it out in the browser
+
+1. Browse products at `/` — no login needed.
+2. Click "Add to cart" on a few products.
+3. Go to Cart, adjust quantities, then click "Proceed to Checkout".
+4. Since you're not logged in, you'll land on Login with a `redirect` back to checkout. Click "Register" to create an account (or log in with the seeded demo account above) — either way you'll be sent back to Checkout automatically.
+5. Click "Place Order" — you'll land on My Orders showing the order you just placed.
 
 ## API endpoints
 
@@ -42,9 +63,9 @@ To stop the server, press `Ctrl+C` in the terminal running it (or, if it's runni
 | POST   | `/api/orders`        | Yes (Bearer JWT)| Place an order from a list of items   |
 | GET    | `/api/orders/my`     | Yes (Bearer JWT)| List the logged-in user's past orders |
 
-## Manual testing
+## Manual testing (API only)
 
-You can test with a browser (for `GET` requests), curl, or a tool like [Postman](https://www.postman.com/downloads/). Examples below use curl.
+The UI walkthrough above is the easiest way to try the app end-to-end. If you want to exercise the REST API directly — for debugging, or to check error responses — you can use a browser (for `GET` requests), curl, or a tool like [Postman](https://www.postman.com/downloads/). Examples below use curl.
 
 ### 1. Browse products (no login)
 
@@ -120,9 +141,14 @@ From there you can run SQL against the `USERS`, `PRODUCTS`, `ORDERS`, and `ORDER
 
 ## Running the automated tests
 
+**Backend** (unit + `@WebMvcTest` + a full `@SpringBootTest` integration test — no servers need to be running first):
 ```bash
 cd backend
 ./mvnw test
 ```
 
-This runs the full suite: Mockito unit tests for the service layer, `@WebMvcTest` slice tests for the controllers (including 401/404/409 cases), and an end-to-end `@SpringBootTest` that registers, logs in, places an order, and checks order history against a real (in-memory) database.
+**Selenium UI tests** (both the backend and frontend dev servers must already be running — see [e2e-tests/README.md](e2e-tests/README.md) for details):
+```bash
+cd e2e-tests
+./mvnw test
+```
