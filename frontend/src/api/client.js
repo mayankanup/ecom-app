@@ -5,9 +5,13 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  try {
+    const auth = JSON.parse(localStorage.getItem('auth'));
+    if (auth?.token) {
+      config.headers.set('Authorization', `Bearer ${auth.token}`);
+    }
+  } catch {
+    // no stored auth, proceed unauthenticated
   }
   return config;
 });
