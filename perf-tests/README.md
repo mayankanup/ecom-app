@@ -8,14 +8,20 @@ Gatling performance / concurrency tests against the running backend. This is a s
 
 ## Running
 
+There are three simulations in this module (see below), so `gatling:test` needs to be told which one to run via `-Dgatling.simulationClass=...` — without it, the plugin prompts interactively for a choice, which just fails outright in a non-interactive shell ("No line found").
+
 ```bash
 cd backend && ./mvnw spring-boot:run     # in one terminal
-cd perf-tests && ./mvnw gatling:test     # in another
+
+cd perf-tests                            # in another
+./mvnw gatling:test -Dgatling.simulationClass=com.ecom.app.perf.ConcurrentOrderStockRaceSimulation
+./mvnw gatling:test -Dgatling.simulationClass=com.ecom.app.perf.ProductsReadThroughputSimulation
+./mvnw gatling:test -Dgatling.simulationClass=com.ecom.app.perf.LoginThroughputSimulation
 ```
 
-On Windows PowerShell, use `.\mvnw.cmd` for either.
+On Windows PowerShell, use `.\mvnw.cmd` instead of `./mvnw`.
 
-Gatling writes an HTML report under `target/gatling/<simulation-name>-<timestamp>/index.html` — open it for latency/throughput charts. But for this module, the more important signal is whether the run **passes or fails**, printed to the console and reflected in the Maven exit code.
+Gatling writes an HTML report per run under `target/gatling/<simulation-name>-<timestamp>/index.html` — open it for latency/throughput charts. But for this module, the more important signal is whether the run **passes or fails**, printed to the console and reflected in the Maven exit code.
 
 ## ConcurrentOrderStockRaceSimulation
 
@@ -53,7 +59,24 @@ Exactly 15 of the 30 requests succeeded (matching available stock), the other 15
 Override via system properties:
 
 ```bash
-./mvnw gatling:test -DbaseUrl=http://localhost:8080 -DproductId=3 -DconcurrentOrders=30
+./mvnw gatling:test -Dgatling.simulationClass=com.ecom.app.perf.ConcurrentOrderStockRaceSimulation \
+  -DbaseUrl=http://localhost:8080 -DproductId=3 -DconcurrentOrders=30
 ```
 
 Note: successful runs permanently reduce that product's stock (H2 only resets on backend restart). If you want a clean 15-in-stock run again, restart the backend first.
+
+## ProductsReadThroughputSimulation
+
+Sustained load against `GET /api/products` — the app's highest-traffic endpoint, since every guest browsing without logging in hits it. This is a throughput/latency benchmark, not a correctness test: it asserts 0% failures and p95 latency under 1000ms (generous, meant to catch a real regression rather than nitpick normal variance), and otherwise just reports the numbers.
+
+Default load: 30 requests/second for 20 seconds (600 requests total). Override with `-DrequestsPerSecond=...` and `-DdurationSeconds=...`.
+
+**What we found**: on a local dev machine against the in-memory H2 DB, 600 requests at 30 rps all succeeded with a mean response time of 7ms and p95 of 11ms (max 75ms). Fast and consistent, as expected for a simple `findAll()` over 8 rows with no auth check.
+
+## LoginThroughputSimulation
+
+Sustained load against `POST /api/auth/login`. `BCryptPasswordEncoder` is deliberately CPU-expensive by design, so this endpoint is expected to have much higher latency and much lower sustainable throughput than a plain read — the point of this test is to put a number on that gap and catch a regression (e.g. someone cranking up the bcrypt strength) rather than to prove a bug. Asserts 0% failures and p95 under 3000ms.
+
+Default load: 10 requests/second for 15 seconds (150 requests total) — deliberately lower than the products-read test. Override with `-DrequestsPerSecond=...` and `-DdurationSeconds=...`.
+
+**What we found**: 150 login requests at 10 rps all succeeded with a mean response time of 65ms and p95 of 67ms (max 237ms) — roughly **9x slower per-request than the products-read endpoint** (7ms mean), which tracks: that gap is bcrypt's hashing cost, not overhead. Comfortably within the 3000ms threshold, but this is the number to watch if login ever needs to scale to real concurrent traffic (e.g. it'd be the first endpoint to bottleneck under a login-heavy spike).

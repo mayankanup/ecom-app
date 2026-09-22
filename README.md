@@ -154,8 +154,8 @@ cd e2e-tests
 ./mvnw test
 ```
 
-**Performance / concurrency tests** (only the backend needs to be running — see [perf-tests/README.md](perf-tests/README.md) for details, including a real race condition this currently catches):
+**Performance / concurrency tests** (only the backend needs to be running — see [perf-tests/README.md](perf-tests/README.md) for details, including a real race condition this caught and how it was fixed):
 ```bash
 cd perf-tests
-./mvnw gatling:test
+./mvnw gatling:test -Dgatling.simulationClass=com.ecom.app.perf.ConcurrentOrderStockRaceSimulation
 ```
