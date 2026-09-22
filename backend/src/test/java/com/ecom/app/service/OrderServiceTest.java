@@ -12,6 +12,7 @@ import com.ecom.app.repository.ProductRepository;
 import com.ecom.app.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,6 +24,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -61,7 +63,7 @@ class OrderServiceTest {
         Product mouse = product(1L, "Mouse", "19.99", 10);
 
         when(userRepository.findByEmail("demo@example.com")).thenReturn(Optional.of(user));
-        when(productRepository.findById(1L)).thenReturn(Optional.of(mouse));
+        when(productRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(mouse));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order o = invocation.getArgument(0);
             o.setId(100L);
@@ -80,7 +82,7 @@ class OrderServiceTest {
     @Test
     void placeOrder_throwsNotFound_whenProductMissing() {
         when(userRepository.findByEmail("demo@example.com")).thenReturn(Optional.of(demoUser()));
-        when(productRepository.findById(99L)).thenReturn(Optional.empty());
+        when(productRepository.findByIdForUpdate(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> orderService.placeOrder("demo@example.com", requestFor(99L, 1)))
                 .isInstanceOf(ResourceNotFoundException.class);
@@ -90,11 +92,38 @@ class OrderServiceTest {
     void placeOrder_throwsConflict_whenInsufficientStock() {
         Product mouse = product(1L, "Mouse", "19.99", 2);
         when(userRepository.findByEmail("demo@example.com")).thenReturn(Optional.of(demoUser()));
-        when(productRepository.findById(1L)).thenReturn(Optional.of(mouse));
+        when(productRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(mouse));
 
         assertThatThrownBy(() -> orderService.placeOrder("demo@example.com", requestFor(1L, 5)))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Insufficient stock");
+    }
+
+    @Test
+    void placeOrder_locksProductsInAscendingIdOrder_regardlessOfRequestOrder() {
+        User user = demoUser();
+        Product keyboard = product(5L, "Keyboard", "59.99", 10);
+        Product mouse = product(2L, "Mouse", "19.99", 10);
+
+        when(userRepository.findByEmail("demo@example.com")).thenReturn(Optional.of(user));
+        when(productRepository.findByIdForUpdate(5L)).thenReturn(Optional.of(keyboard));
+        when(productRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(mouse));
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        OrderItemRequest first = new OrderItemRequest();
+        first.setProductId(5L);
+        first.setQuantity(1);
+        OrderItemRequest second = new OrderItemRequest();
+        second.setProductId(2L);
+        second.setQuantity(1);
+        OrderRequest request = new OrderRequest();
+        request.setItems(List.of(first, second));
+
+        orderService.placeOrder("demo@example.com", request);
+
+        InOrder order = inOrder(productRepository);
+        order.verify(productRepository).findByIdForUpdate(2L);
+        order.verify(productRepository).findByIdForUpdate(5L);
     }
 
     @Test

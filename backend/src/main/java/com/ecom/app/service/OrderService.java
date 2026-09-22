@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -35,8 +36,14 @@ public class OrderService {
         Order order = Order.builder().user(user).total(BigDecimal.ZERO).build();
         BigDecimal total = BigDecimal.ZERO;
 
-        for (OrderItemRequest itemRequest : request.getItems()) {
-            Product product = productRepository.findById(itemRequest.getProductId())
+        // Lock products in a consistent (ascending id) order across all transactions, so two
+        // multi-item orders sharing products can never deadlock waiting on each other's locks.
+        List<OrderItemRequest> items = request.getItems().stream()
+                .sorted(Comparator.comparing(OrderItemRequest::getProductId))
+                .toList();
+
+        for (OrderItemRequest itemRequest : items) {
+            Product product = productRepository.findByIdForUpdate(itemRequest.getProductId())
                     .orElseThrow(() -> new ResourceNotFoundException("Product not found with id " + itemRequest.getProductId()));
 
             if (product.getStock() < itemRequest.getQuantity()) {
