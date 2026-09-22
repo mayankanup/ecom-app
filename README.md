@@ -8,6 +8,7 @@ A Java/Spring Boot + React e-commerce app: browse products without logging in, a
 backend/    Spring Boot 4 REST API (Java 17, Maven, H2 in-memory DB, JWT auth)
 frontend/   React 19 SPA (Vite, react-router-dom, Bootstrap 5)
 e2e-tests/  Selenium UI tests driving the running frontend + backend
+perf-tests/ Gatling performance / concurrency tests against the backend
 ```
 
 ## Prerequisites
@@ -151,4 +152,10 @@ cd backend
 ```bash
 cd e2e-tests
 ./mvnw test
+```
+
+**Performance / concurrency tests** (only the backend needs to be running — see [perf-tests/README.md](perf-tests/README.md) for details, including a real race condition this currently catches):
+```bash
+cd perf-tests
+./mvnw gatling:test
 ```
