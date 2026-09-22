@@ -8,6 +8,7 @@ import Checkout from './pages/Checkout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import OrderHistory from './pages/OrderHistory';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );
