@@ -37,7 +37,7 @@ npm run dev
 On Windows PowerShell, use `.\mvnw.cmd spring-boot:run` for the backend.
 
 Open [http://localhost:5173](http://localhost:5173) in a browser — that's the app. On first backend startup it seeds:
-- 8 sample products
+- 11 sample products
 - One demo user: `demo@example.com` / `password123`
 
 The H2 database is in-memory, so all data resets every time the backend restarts.
@@ -104,7 +104,7 @@ Copy the `token` value for the next steps.
 
 ### 4. Place an order
 
-Replace `PASTE_TOKEN_HERE` with the token from step 3. `productId` values 1–8 exist from the seed data.
+Replace `PASTE_TOKEN_HERE` with the token from step 3. `productId` values 1–11 exist from the seed data.
 
 ```bash
 curl -X POST http://localhost:8080/api/orders \

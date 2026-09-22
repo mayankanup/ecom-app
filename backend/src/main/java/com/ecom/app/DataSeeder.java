@@ -39,7 +39,10 @@ public class DataSeeder implements CommandLineRunner {
                 Product.builder().name("Noise Cancelling Headphones").description("Over-ear headphones with active noise cancellation.").price(new BigDecimal("129.99")).imageUrl("https://picsum.photos/seed/headphones/400/300").stock(25).build(),
                 Product.builder().name("Webcam 1080p").description("Full HD webcam with autofocus and built-in mic.").price(new BigDecimal("44.99")).imageUrl("https://picsum.photos/seed/webcam/400/300").stock(35).build(),
                 Product.builder().name("Laptop Stand").description("Adjustable aluminum laptop stand, foldable.").price(new BigDecimal("24.99")).imageUrl("https://picsum.photos/seed/stand/400/300").stock(60).build(),
-                Product.builder().name("Portable SSD 1TB").description("USB 3.2 portable SSD, up to 1050MB/s read speed.").price(new BigDecimal("89.99")).imageUrl("https://picsum.photos/seed/ssd/400/300").stock(20).build()
+                Product.builder().name("Portable SSD 1TB").description("USB 3.2 portable SSD, up to 1050MB/s read speed.").price(new BigDecimal("89.99")).imageUrl("https://picsum.photos/seed/ssd/400/300").stock(20).build(),
+                Product.builder().name("Wireless Earbuds").description("True wireless earbuds with active noise cancellation and charging case.").price(new BigDecimal("79.99")).imageUrl("https://picsum.photos/seed/earbuds/400/300").stock(45).build(),
+                Product.builder().name("Bluetooth Speaker").description("Portable waterproof Bluetooth speaker with 12-hour battery life.").price(new BigDecimal("49.99")).imageUrl("https://picsum.photos/seed/speaker/400/300").stock(30).build(),
+                Product.builder().name("Monitor Light Bar").description("USB-powered monitor light bar with adjustable brightness and color temperature.").price(new BigDecimal("39.99")).imageUrl("https://picsum.photos/seed/lightbar/400/300").stock(28).build()
         ));
     }
 
