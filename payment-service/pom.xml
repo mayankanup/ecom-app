@@ -8,10 +8,10 @@
 		<version>4.1.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.ecom.app</groupId>
-	<artifactId>ecom-app-backend</artifactId>
+	<groupId>com.ecom.payment</groupId>
+	<artifactId>payment-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>ecom-app-backend</name>
+	<name>payment-service</name>
 	<description/>
 	<url/>
 	<licenses>
@@ -32,18 +32,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-h2console</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 		<dependency>
@@ -58,52 +46,9 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt-api</artifactId>
-			<version>0.12.6</version>
-		</dependency>
-		<dependency>
-			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt-impl</artifactId>
-			<version>0.12.6</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt-jackson</artifactId>
-			<version>0.12.6</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-resttestclient</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<!-- Compile scope (not test-only): PaymentClient needs the RestClient.Builder
-			     autoconfiguration this brings at runtime, not just for tests. -->
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-restclient</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security-test</artifactId>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -116,7 +61,7 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>au.com.dius.pact.consumer</groupId>
+			<groupId>au.com.dius.pact.provider</groupId>
 			<artifactId>junit5</artifactId>
 			<version>4.7.5</version>
 			<scope>test</scope>
@@ -134,7 +79,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<systemPropertyVariables>
-						<!-- Shared with payment-service's provider verification test - PaymentClientPactTest writes here. -->
+						<!-- Shared with backend's consumer pact test so both modules read/write the same contract file. -->
 						<pact.rootDir>${project.basedir}/../pacts</pact.rootDir>
 					</systemPropertyVariables>
 				</configuration>

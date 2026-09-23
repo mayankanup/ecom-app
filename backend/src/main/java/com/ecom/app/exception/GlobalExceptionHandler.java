@@ -35,6 +35,16 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.UNAUTHORIZED, "Invalid email or password", null);
     }
 
+    @ExceptionHandler(PaymentDeclinedException.class)
+    public ResponseEntity<ApiError> handlePaymentDeclined(PaymentDeclinedException ex) {
+        return build(HttpStatus.PAYMENT_REQUIRED, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(PaymentServiceUnavailableException.class)
+    public ResponseEntity<ApiError> handlePaymentServiceUnavailable(PaymentServiceUnavailableException ex) {
+        return build(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), null);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> fieldErrors = new HashMap<>();
