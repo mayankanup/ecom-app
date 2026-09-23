@@ -1,11 +1,14 @@
 package com.ecom.app.service;
 
+import com.ecom.app.client.ChargeResult;
+import com.ecom.app.client.PaymentClient;
 import com.ecom.app.dto.OrderItemRequest;
 import com.ecom.app.dto.OrderRequest;
 import com.ecom.app.dto.OrderResponse;
 import com.ecom.app.entity.Order;
 import com.ecom.app.entity.Product;
 import com.ecom.app.entity.User;
+import com.ecom.app.exception.PaymentDeclinedException;
 import com.ecom.app.exception.ResourceNotFoundException;
 import com.ecom.app.repository.OrderRepository;
 import com.ecom.app.repository.ProductRepository;
@@ -25,6 +28,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,6 +41,8 @@ class OrderServiceTest {
     private ProductRepository productRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private PaymentClient paymentClient;
 
     @InjectMocks
     private OrderService orderService;
@@ -46,6 +53,14 @@ class OrderServiceTest {
 
     private static Product product(long id, String name, String price, int stock) {
         return Product.builder().id(id).name(name).price(new BigDecimal(price)).stock(stock).build();
+    }
+
+    private static ChargeResult succeededCharge() {
+        return new ChargeResult("ch_test", 0L, "usd", "succeeded", 0L);
+    }
+
+    private static ChargeResult declinedCharge() {
+        return new ChargeResult("ch_test", 0L, "usd", "failed", 0L);
     }
 
     private static OrderRequest requestFor(long productId, int quantity) {
@@ -64,6 +79,7 @@ class OrderServiceTest {
 
         when(userRepository.findByEmail("demo@example.com")).thenReturn(Optional.of(user));
         when(productRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(mouse));
+        when(paymentClient.charge(any())).thenReturn(succeededCharge());
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order o = invocation.getArgument(0);
             o.setId(100L);
@@ -108,6 +124,7 @@ class OrderServiceTest {
         when(userRepository.findByEmail("demo@example.com")).thenReturn(Optional.of(user));
         when(productRepository.findByIdForUpdate(5L)).thenReturn(Optional.of(keyboard));
         when(productRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(mouse));
+        when(paymentClient.charge(any())).thenReturn(succeededCharge());
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         OrderItemRequest first = new OrderItemRequest();
@@ -124,6 +141,22 @@ class OrderServiceTest {
         InOrder order = inOrder(productRepository);
         order.verify(productRepository).findByIdForUpdate(2L);
         order.verify(productRepository).findByIdForUpdate(5L);
+    }
+
+    @Test
+    void placeOrder_throwsPaymentDeclined_andRollsBackStock_whenChargeFails() {
+        Product mouse = product(1L, "Mouse", "19.99", 10);
+        when(userRepository.findByEmail("demo@example.com")).thenReturn(Optional.of(demoUser()));
+        when(productRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(mouse));
+        when(paymentClient.charge(any())).thenReturn(declinedCharge());
+
+        assertThatThrownBy(() -> orderService.placeOrder("demo@example.com", requestFor(1L, 3)))
+                .isInstanceOf(PaymentDeclinedException.class);
+
+        // The @Transactional rollback (not exercised by this unit test, which never opens a
+        // real transaction) is what undoes this in production; here we just confirm the order
+        // is never persisted once payment fails.
+        verify(orderRepository, never()).save(any());
     }
 
     @Test

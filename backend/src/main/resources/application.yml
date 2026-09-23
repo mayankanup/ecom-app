@@ -27,3 +27,9 @@ app:
 
 cors:
   allowed-origins: http://localhost:5173
+
+payment:
+  service:
+    base-url: ${PAYMENT_SERVICE_URL:http://localhost:8081}
+    # Must match payment-service's app.api-key (see payment-service/src/main/resources/application.yml).
+    api-key: ${PAYMENT_API_KEY:sk_test_51_local_dev_key}

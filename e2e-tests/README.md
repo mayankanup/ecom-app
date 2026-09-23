@@ -5,7 +5,7 @@ Selenium UI tests that drive the real frontend (and, through it, the real backen
 ## Prerequisites
 
 - A local Chrome/Chromium install (WebDriverManager downloads the matching `chromedriver` automatically)
-- Both the backend and frontend dev servers running
+- The backend, frontend, **and payment-service** dev servers all running — `CheckoutFlowTest` places a real order through a real checkout call, and since `OrderService` now charges through `PaymentClient` for every order (not just that test), the backend can't complete `POST /api/orders` at all without payment-service up.
 
 ## Running the tests
 
@@ -14,13 +14,18 @@ Selenium UI tests that drive the real frontend (and, through it, the real backen
    cd backend
    ./mvnw spring-boot:run
    ```
-2. Start the frontend, in a separate terminal:
+2. Start payment-service, in a separate terminal:
+   ```bash
+   cd payment-service
+   ./mvnw spring-boot:run
+   ```
+3. Start the frontend, in a separate terminal:
    ```bash
    cd frontend
    npm install   # first time only
    npm run dev
    ```
-3. Run the Selenium tests, in a third terminal:
+4. Run the Selenium tests, in a fourth terminal:
    ```bash
    cd e2e-tests
    ./mvnw test

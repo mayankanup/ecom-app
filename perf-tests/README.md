@@ -5,15 +5,17 @@ Gatling performance / concurrency tests against the running backend. This is a s
 ## Prerequisites
 
 - The backend running (does **not** need the frontend)
+- **payment-service also running, but only for `ConcurrentOrderStockRaceSimulation`** — it places real orders via `POST /api/orders`, which now charges through `PaymentClient` for every order. `ProductsReadThroughputSimulation` and `LoginThroughputSimulation` don't touch orders and don't need it.
 
 ## Running
 
 There are three simulations in this module (see below), so `gatling:test` needs to be told which one to run via `-Dgatling.simulationClass=...` — without it, the plugin prompts interactively for a choice, which just fails outright in a non-interactive shell ("No line found").
 
 ```bash
-cd backend && ./mvnw spring-boot:run     # in one terminal
+cd backend && ./mvnw spring-boot:run             # in one terminal
+cd payment-service && ./mvnw spring-boot:run     # in another - only needed for the race simulation
 
-cd perf-tests                            # in another
+cd perf-tests                                    # in another
 ./mvnw gatling:test -Dgatling.simulationClass=com.ecom.app.perf.ConcurrentOrderStockRaceSimulation
 ./mvnw gatling:test -Dgatling.simulationClass=com.ecom.app.perf.ProductsReadThroughputSimulation
 ./mvnw gatling:test -Dgatling.simulationClass=com.ecom.app.perf.LoginThroughputSimulation
