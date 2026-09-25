@@ -10,6 +10,7 @@ frontend/         React 19 SPA (Vite, react-router-dom, Bootstrap 5)
 payment-service/  Spring Boot 4 - a local stand-in for a third-party gateway like Stripe
 e2e-tests/        Selenium UI tests driving the running frontend + backend
 perf-tests/       Gatling performance / concurrency tests against the backend
+karate-tests/     Karate API tests for the order-placement flow against the running backend
 pacts/            Generated Pact contract file shared between backend and payment-service (not committed, like target/)
 ```
 
@@ -197,4 +198,10 @@ cd e2e-tests
 ```bash
 cd perf-tests
 ./mvnw gatling:test -Dgatling.simulationClass=com.ecom.app.perf.ConcurrentOrderStockRaceSimulation
+```
+
+**Karate API tests** (the backend and payment-service dev servers must already be running — see [karate-tests/README.md](karate-tests/README.md) for details, including happy-path and 401/404/409/402 coverage of the order-placement API):
+```bash
+cd karate-tests
+./mvnw test
 ```
