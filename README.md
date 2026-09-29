@@ -214,4 +214,21 @@ npm install   # first time only
 npm test
 ```
 
+## Mutation testing
+
+[PIT](https://pitest.org/) checks whether the tests around `OrderService` would actually catch a bug, not just whether they execute its lines. It works by generating small deliberate bugs ("mutants" - negate a conditional, drop a null-check, change a return value) and rerunning the test suite against each one: a test failing means the mutant is **killed** (good), everything still passing means it **survived** (a real gap, even on a fully-covered line). Scoped to `OrderService` since it's the most logic-heavy class in the app (stock locking, total computation, payment-decline handling) with the best existing unit test coverage to evaluate against. Not bound to `mvn test` - it's slow (recompiles and reruns tests once per mutant) - so it's run explicitly:
+
+```bash
+cd backend
+./mvnw org.pitest:pitest-maven:mutationCoverage
+```
+
+Open the report at `target/pit-reports/index.html`.
+
+**What it found**: 98% line coverage, but only 81% mutation score (13/16 mutants killed) - three mutants had **no coverage at all** despite that high line-coverage number:
+- Two identical gaps in `placeOrder` and `getOrdersForUser`: both call `userRepository.findByEmail(userEmail).orElseThrow(...)`, and no test exercises the case where an authenticated request's email doesn't resolve to a real user (a stale/orphaned JWT, e.g. after the user row was deleted).
+- One gap in `placeOrder`'s optional-card-number handling: the `!request.getCardNumber().isBlank()` half of the null-or-blank check is untested - existing tests cover `cardNumber` being absent (`null`) and having a real value, but not being present-and-blank (`""`).
+
+This is the exact case mutation testing exists to catch: coverage alone said this code was "tested," but nothing actually verified those specific behaviors.
+
 Not wired into CI: the committed baseline screenshots were generated on Windows, and comparing them against a Linux GitHub Actions runner would produce false-positive diffs from font-rendering differences alone, not real regressions. This one is a local/manual dev-workflow check for now — making it CI-safe would mean generating (and re-generating) the baseline inside a Linux container matching the runner, which is a reasonable follow-up if this proves valuable.

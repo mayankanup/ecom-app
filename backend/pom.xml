@@ -140,6 +140,36 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<!-- Mutation testing, scoped to OrderService: it's the most logic-heavy class
+				     (stock locking/decrement, total computation, payment decline handling) with
+				     the best existing unit test coverage to evaluate. Not bound to a lifecycle
+				     phase - it's slow (recompiles and reruns tests once per mutant), so it's run
+				     explicitly via `mvn org.pitest:pitest-maven:mutationCoverage`, not on every
+				     `mvn test`. -->
+				<groupId>org.pitest</groupId>
+				<artifactId>pitest-maven</artifactId>
+				<version>1.30.0</version>
+				<configuration>
+					<targetClasses>
+						<param>com.ecom.app.service.OrderService</param>
+					</targetClasses>
+					<targetTests>
+						<param>com.ecom.app.service.OrderServiceTest</param>
+						<param>com.ecom.app.OrderFlowIntegrationTest</param>
+					</targetTests>
+					<outputFormats>
+						<outputFormat>HTML</outputFormat>
+					</outputFormats>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.pitest</groupId>
+						<artifactId>pitest-junit5-plugin</artifactId>
+						<version>1.2.3</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<executions>
