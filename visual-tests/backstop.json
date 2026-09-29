@@ -1,0 +1,47 @@
+{
+  "id": "ecom-app-visual-tests",
+  "viewports": [
+    { "label": "mobile", "width": 400, "height": 900 },
+    { "label": "tablet", "width": 700, "height": 900 },
+    { "label": "desktop", "width": 1280, "height": 900 }
+  ],
+  "onBeforeScript": "puppet/onBefore.js",
+  "onReadyScript": "puppet/onReady.js",
+  "scenarios": [
+    {
+      "label": "Product List - Home Page",
+      "cookiePath": "backstop_data/engine_scripts/cookies.json",
+      "url": "http://localhost:5173/",
+      "referenceUrl": "",
+      "readyEvent": "",
+      "readySelector": ".card",
+      "delay": 1000,
+      "hideSelectors": [],
+      "removeSelectors": [],
+      "hoverSelector": "",
+      "clickSelector": "",
+      "postInteractionWait": 0,
+      "selectors": ["document"],
+      "selectorExpansion": true,
+      "expect": 0,
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": true
+    }
+  ],
+  "paths": {
+    "bitmaps_reference": "backstop_data/bitmaps_reference",
+    "bitmaps_test": "backstop_data/bitmaps_test",
+    "engine_scripts": "backstop_data/engine_scripts",
+    "html_report": "backstop_data/html_report",
+    "ci_report": "backstop_data/ci_report"
+  },
+  "report": ["browser"],
+  "engine": "puppeteer",
+  "engineOptions": {
+    "args": ["--no-sandbox"]
+  },
+  "asyncCaptureLimit": 3,
+  "asyncCompareLimit": 10,
+  "debug": false,
+  "debugWindow": false
+}

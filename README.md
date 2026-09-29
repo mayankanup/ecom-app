@@ -11,6 +11,7 @@ payment-service/  Spring Boot 4 - a local stand-in for a third-party gateway lik
 e2e-tests/        Selenium UI tests driving the running frontend + backend
 perf-tests/       Gatling performance / concurrency tests against the backend
 karate-tests/     Karate API tests for the order-placement flow against the running backend
+visual-tests/     BackstopJS visual regression tests for the product list / home page
 pacts/            Generated Pact contract file shared between backend and payment-service (not committed, like target/)
 ```
 
@@ -205,3 +206,12 @@ cd perf-tests
 cd karate-tests
 ./mvnw test
 ```
+
+**Visual regression tests** (the backend and frontend dev servers must already be running — see [visual-tests/README.md](visual-tests/README.md) for details, including how to update the baseline after an intentional UI change):
+```bash
+cd visual-tests
+npm install   # first time only
+npm test
+```
+
+Not wired into CI: the committed baseline screenshots were generated on Windows, and comparing them against a Linux GitHub Actions runner would produce false-positive diffs from font-rendering differences alone, not real regressions. This one is a local/manual dev-workflow check for now — making it CI-safe would mean generating (and re-generating) the baseline inside a Linux container matching the runner, which is a reasonable follow-up if this proves valuable.

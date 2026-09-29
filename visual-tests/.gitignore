@@ -1,0 +1,6 @@
+node_modules/
+
+# Generated per-run artifacts - only bitmaps_reference (the committed baseline) is source of truth
+backstop_data/bitmaps_test/
+backstop_data/html_report/
+backstop_data/ci_report/

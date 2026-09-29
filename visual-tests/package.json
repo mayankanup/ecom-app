@@ -1,0 +1,17 @@
+{
+  "name": "visual-tests",
+  "version": "1.0.0",
+  "description": "BackstopJS visual regression tests for the product list / home page",
+  "private": true,
+  "scripts": {
+    "reference": "backstop reference",
+    "test": "backstop test",
+    "approve": "backstop approve",
+    "openReport": "backstop openReport"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "devDependencies": {
+    "backstopjs": "^6.3.25"
+  }
+}
